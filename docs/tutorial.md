@@ -1,4 +1,4 @@
-## Create Fresh AWS S3 Signed URLs for Your Demo Assets with One Command
+## Keep Your AWS S3 Demo Assets Live: Automating Presigned URLs with Node.js
 
 ### TL;DR
 You work with audio (or any media) all the time and have **demo assets** stored securely on Amazon S3.  
