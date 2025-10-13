@@ -1,0 +1,5 @@
+
+import { fromIni } from "@aws-sdk/credential-providers";
+
+const creds = await fromIni({ profile: "admin" })();
+console.log(creds);
