@@ -1,0 +1,20 @@
+{
+  "name": "audioshake-developer-tools-aws-demo-assets-tool",
+  "version": "1.0.0",
+  "description": "A lightweight Node.js command-line tool that lists S3 media assets, generates presigned URLs, and outputs a `demo-assets.json` file for easy integration into your audio, video, or SDK demos.   Designed for developers who regularly work with secure Amazon S3 buckets to manage and refresh demo content.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.910.0",
+    "@aws-sdk/credential-providers": "^3.910.0",
+    "@aws-sdk/s3-request-presigner": "^3.910.0"
+  }
+}

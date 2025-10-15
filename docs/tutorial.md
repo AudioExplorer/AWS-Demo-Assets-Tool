@@ -4,6 +4,8 @@
 You work with audio (or any media) all the time and have **demo assets** stored securely on Amazon S3.  
 You want to load these into your apps or SDK demos — but your **signed URLs keep expiring**.  
 
+*Update:* The CLI now also supports uploading local files or directories to your S3 demo-assets bucket and listing contents directly — so you can keep everything in sync from one command.
+
 This little Node.js CLI lets you:
 - Generate presigned URLs for your S3 bucket (`demo-assets/`)
 - Save them in a JSON file for easy import into any project  
@@ -67,8 +69,8 @@ aws s3 ls s3://audioshake/demo-assets/ --profile admin
 
 Clone the repo (coming soon on GitHub):
 ```bash
-git clone https://github.com/AudioExplorer/audioshake-developer-tools-AWS-Demo-Assets-Tool
-cd audioshake-developer-tools-AWS-Demo-Assets-Tool
+git clone https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
+cd AWS-Demo-Assets-Tool
 ```
 
 Then install the dependencies globally:
@@ -98,6 +100,34 @@ It will:
 
 ---
 
+```
+🔍 Listing objects in s3://audioshake/demo-assets/ ...
+demo-assets.json created with 8 assets
+```
+
+## Step 4: Upload or List Assets
+
+You can now upload new demo files or check what’s in your bucket without generating JSON.
+
+Upload a single file:
+```bash
+create-demo-assets --upload ./song.mp3
+```
+
+Upload a directory:
+```bash
+create-demo-assets --uploadDir ./assets --type=mp3,mp4
+```
+
+List all files:
+```bash
+create-demo-assets --list
+```
+
+If you pass `--type`, only matching file extensions are included. Supported formats include mp3, wav, mp4, mov, json, txt, md, and more.
+
+---
+
 ## How It Works (Under the Hood)
 
 The script uses the AWS SDK v3:
@@ -110,6 +140,8 @@ import { fromIni } from "@aws-sdk/credential-providers";
 It lists objects, creates presigned URLs via `GetObjectCommand`, and writes them to JSON.
 
 If your bucket’s `LocationConstraint` is `null`, it automatically signs requests for `us-east-1` (the classic region quirk).
+
+The same script now handles uploads and listing via the same S3 client — no extra configuration required.
 
 ---
 
@@ -148,7 +180,7 @@ If you use NVM and global modules, the provided wrapper ensures this CLI works e
 
 ---
 
-#### Grab the GitHub **Repository:** [audioshake-developer-tools-AWS-Demo-Assets-Tool](https://github.com/AudioExplorer/audioshake-developer-tools-AWS-Demo-Assets-Tool)  
+#### Grab the GitHub **Repository:** [AWS-Demo-Assets-Tool](https://github.com/AudioExplorer/AWS-Demo-Assets-Tool)  
 Includes:
 - `/scripts/create-demo-assets.mjs` (Node script)  
 - `/bin/create-demo-assets` (NVM-aware global wrapper)  
@@ -159,6 +191,8 @@ Includes:
 ## Why It’s Useful
 This simple tool bridges your secure S3 assets with live demos or dev environments — without exposing buckets or manually generating signed URLs every time.  
 
+Recent updates make it easier to keep demo assets synchronized: you can upload, list, and regenerate signed URLs from one CLI.
+
 Perfect for:
 - API demos
 - Audio/Video SDK previews
@@ -167,3 +201,5 @@ Perfect for:
 ---
 
 **Tags:** `#aws` `#nodejs` `#cli` `#developers` `#audioshake`
+
+The roadmap includes additional S3 management features and examples. Stay tuned for more developer-facing utilities.
