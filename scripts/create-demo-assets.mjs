@@ -273,12 +273,19 @@ if (resetConfigMode) {
 }
 
 // --- Load configuration ---
-const config = loadConfig() || { region: "us-east-1", bucket: "audioshake", prefix: "demo-assets/", profile: "admin", hours: 12 };
+// --- Load configuration ---
+const config = loadConfig() || {
+    region: "us-east-1",
+    bucket: "your-s3-bucket-name",
+    prefix: "demo-assets/",
+    profile: "default",
+    hours: 12,
+};
 
 const REGION = config.region || "us-east-1";
-const BUCKET = config.bucket || "audioshake";
+const BUCKET = config.bucket || "your-s3-bucket-name";
 const PREFIX = config.prefix || "demo-assets/";
-const PROFILE = config.profile || process.env.AWS_PROFILE || "admin";
+const PROFILE = config.profile || process.env.AWS_PROFILE || "default";
 const EXPIRY_HOURS = Number(getArgValue("--hours", config.hours || 12));
 
 // --- AWS S3 Client ---

@@ -10,8 +10,8 @@ dev-to.md
 github.md
 scripts/demo-assets.json
 tmp.txt
-publish.md
-
+demo-assets.json
+scripts/publish.md
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
