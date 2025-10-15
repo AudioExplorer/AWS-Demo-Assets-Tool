@@ -1,4 +1,77 @@
 #!/usr/bin/env node
+import child_process from "child_process";
+
+if (process.argv.includes("--install")) {
+    const INSTALL_DIR = "/usr/local/lib/create-demo-assets";
+    const WRAPPER_PATH = "/usr/local/bin/create-demo-assets";
+    const SCRIPT_PATH = decodeURIComponent(new URL(import.meta.url).pathname);
+    const fs = await import("fs");
+    let needsSudo = false;
+    // Determine if we need sudo for /usr/local/lib and /usr/local/bin
+    try {
+        fs.accessSync("/usr/local/lib", fs.constants.W_OK);
+        fs.accessSync("/usr/local/bin", fs.constants.W_OK);
+    } catch (e) {
+        // Not writable, check if root
+        if (typeof process.getuid === "function" && process.getuid() !== 0) {
+            needsSudo = true;
+            console.log("⚠️  Elevated privileges required for install");
+        }
+    }
+    console.log("Debug:", { getuid: process.getuid?.(), needsSudo });
+
+    // Helper to run commands with or without sudo (interactive with TTY)
+    function run(cmd) {
+        if (needsSudo && !cmd.trim().startsWith("sudo")) {
+            // Escape quotes and force interactive password prompt
+            cmd = `sudo -S bash -c "${cmd.replace(/"/g, '\\"')}"`;
+            console.log(`🔒 Running with elevated privileges: ${cmd}`);
+        }
+        child_process.execSync(cmd, { stdio: "inherit" });
+    }
+
+    console.log(`Copying from ${SCRIPT_PATH} → ${INSTALL_DIR}/create-demo-assets.mjs`);
+    console.log("Installing create-demo-assets CLI...");
+
+    try {
+        // Ensure target directory exists (robust Node-based check)
+        console.log("📁 Ensuring install directory exists...");
+        try {
+            const target = "/usr/local/lib/create-demo-assets";
+            if (fs.existsSync(target)) {
+                const stat = fs.lstatSync(target);
+                if (!stat.isDirectory()) {
+                    console.log("⚙️ Removing blocking file at install path...");
+                    run(`rm -f "${target}"`);
+                }
+            }
+            run(`mkdir -p "${target}"`);
+        } catch (err) {
+            console.error("❌ Could not prepare install directory:", err.message);
+        }
+        run(`cp ${SCRIPT_PATH} ${INSTALL_DIR}/create-demo-assets.mjs`);
+        run(`npm install --prefix ${INSTALL_DIR} @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers`);
+
+        const wrapperContent = `#!/bin/bash
+INSTALL_DIR="/usr/local/lib/create-demo-assets"
+SCRIPT_PATH="$INSTALL_DIR/create-demo-assets.mjs"
+NODE_BIN=$(command -v node)
+export NODE_PATH="$INSTALL_DIR/node_modules"
+export NODE_OPTIONS="--experimental-specifier-resolution=node"
+exec "$NODE_BIN" "$SCRIPT_PATH" "$@"
+`;
+        fs.writeFileSync("/tmp/create-demo-assets-wrapper", wrapperContent);
+        run(`mv /tmp/create-assets-wrapper ${WRAPPER_PATH}`);
+        run(`chmod +x ${WRAPPER_PATH}`);
+
+        console.log("✅ Installation complete! Try running: create-demo-assets --help");
+        process.exit(0);
+    } catch (err) {
+        console.error("❌ Installation failed:", err.message);
+        process.exit(1);
+    }
+}
+
 /**
  * AudioShake Demo Asset Builder (v2)
  *

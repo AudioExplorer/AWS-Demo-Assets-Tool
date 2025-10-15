@@ -1,20 +1,23 @@
 {
-  "name": "audioshake-developer-tools-aws-demo-assets-tool",
+  "name": "audioshake-demo-assets",
   "version": "1.0.0",
-  "description": "A lightweight Node.js command-line tool that lists S3 media assets, generates presigned URLs, and outputs a `demo-assets.json` file for easy integration into your audio, video, or SDK demos.   Designed for developers who regularly work with secure Amazon S3 buckets to manage and refresh demo content.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
+  "author": "Dan Zeitman <dan@audioshake.ai>",
+  "description": "Generate and refresh AWS S3 presigned URLs for AudioShake demo assets. A lightweight Node.js command-line tool that lists S3 media assets, generates presigned URLs, and outputs a `demo-assets.json` file for easy integration into your audio, video, or SDK demos.   Designed for developers who regularly work with secure Amazon S3 buckets to manage and refresh demo content.",
+  "type": "module",
+  "bin": {
+    "create-demo-assets": "./scripts/create-demo-assets.mjs"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "engines": {
+    "node": ">=18"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.910.0",
-    "@aws-sdk/credential-providers": "^3.910.0",
-    "@aws-sdk/s3-request-presigner": "^3.910.0"
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
+    "@aws-sdk/credential-providers": "^3.600.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AudioExplorer/AWS-Demo-Assets-Tool"
   }
 }
