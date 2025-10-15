@@ -61,7 +61,7 @@ export NODE_OPTIONS="--experimental-specifier-resolution=node"
 exec "$NODE_BIN" "$SCRIPT_PATH" "$@"
 `;
         fs.writeFileSync("/tmp/create-demo-assets-wrapper", wrapperContent);
-        run(`mv /tmp/create-assets-wrapper ${WRAPPER_PATH}`);
+        run(`mv /tmp/create-demo-assets-wrapper ${WRAPPER_PATH}`);
         run(`chmod +x ${WRAPPER_PATH}`);
 
         console.log("✅ Installation complete! Try running: create-demo-assets --help");
@@ -235,10 +235,18 @@ async function listBucket() {
             console.log("⚠️  No assets found.");
             return;
         }
-        listResp.Contents.filter(obj => !obj.Key.endsWith("/")).forEach(obj => {
+        // Filter out folders and, if ALLOWED_TYPES, filter by extension
+        let filteredObjs = listResp.Contents.filter(obj => !obj.Key.endsWith("/"));
+        if (ALLOWED_TYPES) {
+            filteredObjs = filteredObjs.filter(obj => {
+                const ext = obj.Key.split(".").pop().toLowerCase();
+                return ALLOWED_TYPES.includes(ext);
+            });
+        }
+        filteredObjs.forEach(obj => {
             console.log(`• ${obj.Key} (${(obj.Size / 1024).toFixed(1)} KB)`);
         });
-        console.log(`✅ Total files: ${listResp.Contents.length}`);
+        console.log(`✅ Total files: ${filteredObjs.length}`);
     } catch (err) {
         console.error("❌ Failed to list bucket:", err.message);
     }
@@ -298,7 +306,7 @@ async function buildDemoAssets() {
 
     const validAssets = assets.filter(Boolean);
     const output = { assets: validAssets };
-    const outputPath = path.join(__dirname, "demo-assets.json");
+    const outputPath = path.resolve(process.cwd(), "demo-assets.json");
 
     try {
         if (fs.existsSync(outputPath)) {
@@ -316,8 +324,9 @@ async function buildDemoAssets() {
 if (showHelp) {
     console.log(`
 AudioShake Demo Asset Builder (v2)
----------------------------------
+----------------------------------
 Usage:
+  npx create-demo-assets [options]
   create-demo-assets [options]
 
 Options:
@@ -342,6 +351,9 @@ Supported File Types:
   Images: jpg, jpeg, png, gif, webp
 
 💡 To extend support, edit the mimeMap inside scripts/create-demo-assets.mjs.
+
+Docs & Updates:
+  https://github.com/audioshake-dev/demo-assets-tool
 `);
     process.exit(0);
 }
