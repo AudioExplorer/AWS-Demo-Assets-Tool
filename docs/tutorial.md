@@ -2,14 +2,14 @@
 
 ### TL;DR
 You work with audio (or any media) all the time and have **demo assets** stored securely on Amazon S3.  
-You want to load these into your apps or SDK demos — but your **signed URLs keep expiring**.  
+You want to load these into your apps or SDK demos — but your **presigned URLs keep expiring**.  
 
-*Update:* The CLI now also supports uploading local files or directories to your S3 demo-assets bucket and listing contents directly — so you can keep everything in sync from one command.
+*Update:* The CLI now also supports uploading files or directories to your S3 demo‑assets bucket and listing bucket contents — all with one command.
 
 This little Node.js CLI lets you:
-- Generate presigned URLs for your S3 bucket (`demo-assets/`)
-- Save them in a JSON file for easy import into any project  
-- Refresh them anytime with a single command
+- generate presigned URLs for your S3 bucket (`demo-assets/`)
+- save them in a JSON file for easy import into any project  
+- refresh them anytime with a single command
 
 Let’s walk through how to build it.
 
@@ -63,11 +63,13 @@ aws sts get-caller-identity --profile admin
 aws s3 ls s3://audioshake/demo-assets/ --profile admin
 ```
 
+Ensure your IAM policy allows `s3:ListBucket` and `s3:GetObject` for your demo‑assets prefix.
+
 ---
 
 ## Step 2: Install the CLI
 
-Clone the repo (coming soon on GitHub):
+Clone the repo (available on GitHub):
 ```bash
 git clone https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
 cd AWS-Demo-Assets-Tool
@@ -94,9 +96,9 @@ create-demo-assets
 ```
 
 It will:
-- List all objects in your S3 folder  
-- Generate presigned URLs (default 12h expiry)  
-- Save `demo-assets.json` in your current working directory  
+- list all objects in your S3 folder  
+- generate presigned URLs (default 12‑hour expiry)  
+- save `demo-assets.json` in your current working directory  
 
 ---
 
@@ -139,7 +141,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 
 It lists objects, creates presigned URLs via `GetObjectCommand`, and writes them to JSON.
 
-If your bucket’s `LocationConstraint` is `null`, it automatically signs requests for `us-east-1` (the classic region quirk).
+If your bucket has no `LocationConstraint` (the classic us‑east‑1 case), the CLI automatically signs requests for that region.
 
 The same script now handles uploads and listing via the same S3 client — no extra configuration required.
 
@@ -147,8 +149,8 @@ The same script now handles uploads and listing via the same S3 client — no ex
 
 ## Refreshing URLs
 
-Each URL has a 12-hour expiry by default.  
-When your links expire, just re-run:
+Each URL has a 12‑hour expiry by default.  
+When your links expire, just rerun:
 ```bash
 create-demo-assets
 ```
@@ -174,7 +176,7 @@ demo-assets.json created with 8 assets
 
 ---
 
-## 🪄 Bonus Tip
+## Bonus Tip
 
 If you use NVM and global modules, the provided wrapper ensures this CLI works even in fresh shells — no path or version headaches.
 
@@ -189,9 +191,9 @@ Includes:
 ---
 
 ## Why It’s Useful
-This simple tool bridges your secure S3 assets with live demos or dev environments — without exposing buckets or manually generating signed URLs every time.  
+This simple tool bridges your secure S3 assets with live demos or dev environments — without exposing buckets or manually generating presigned URLs every time.  
 
-Recent updates make it easier to keep demo assets synchronized: you can upload, list, and regenerate signed URLs from one CLI.
+Recent updates make it easier to keep demo assets synchronized: you can upload, list, and regenerate presigned URLs from one CLI.
 
 Perfect for:
 - API demos
@@ -203,3 +205,7 @@ Perfect for:
 **Tags:** `#aws` `#nodejs` `#cli` `#developers` `#audioshake`
 
 The roadmap includes additional S3 management features and examples. Stay tuned for more developer-facing utilities.
+
+---
+
+**Caution:** Avoid exposing your presigned JSON publicly or using overly long expirations.
