@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import child_process from "child_process";
+import os from "os";
+import readline from "readline";
 
 if (process.argv.includes("--install")) {
     const INSTALL_DIR = "/usr/local/lib/create-demo-assets";
@@ -50,7 +52,7 @@ if (process.argv.includes("--install")) {
             console.error("❌ Could not prepare install directory:", err.message);
         }
         run(`cp ${SCRIPT_PATH} ${INSTALL_DIR}/create-demo-assets.mjs`);
-        run(`npm install --prefix ${INSTALL_DIR} @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers`);
+        run(`npm install --prefix ${INSTALL_DIR} @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers @aws-sdk/client-sts`);
 
         const wrapperContent = `#!/bin/bash
 INSTALL_DIR="/usr/local/lib/create-demo-assets"
@@ -111,10 +113,135 @@ try {
     console.warn("⚠️  NVM module path not set (non-critical):", err.message);
 }
 
-// --- Configuration defaults ---
-const REGION = "us-east-1";
-const BUCKET = "audioshake";
-const PREFIX = "demo-assets/";
+// --- Configuration and Setup Helpers ---
+const LOCAL_CONFIG = path.resolve(process.cwd(), "demo-assets-config.json");
+const GLOBAL_DIR = path.resolve(os.homedir(), ".audioshake");
+const GLOBAL_CONFIG = path.join(GLOBAL_DIR, "demo-assets-config.json");
+
+// --- Reset config helper ---
+function resetConfig() {
+    let removedAny = false;
+    if (fs.existsSync(LOCAL_CONFIG)) {
+        try {
+            fs.unlinkSync(LOCAL_CONFIG);
+            console.log(`🗑️ Removed local config: ${LOCAL_CONFIG}`);
+            removedAny = true;
+        } catch (err) {
+            console.error(`❌ Failed to remove local config: ${LOCAL_CONFIG}`, err.message);
+        }
+    } else {
+        console.log(`ℹ️ No local config found at ${LOCAL_CONFIG}`);
+    }
+    if (fs.existsSync(GLOBAL_CONFIG)) {
+        try {
+            fs.unlinkSync(GLOBAL_CONFIG);
+            console.log(`🗑️ Removed global config: ${GLOBAL_CONFIG}`);
+            removedAny = true;
+        } catch (err) {
+            console.error(`❌ Failed to remove global config: ${GLOBAL_CONFIG}`, err.message);
+        }
+    } else {
+        console.log(`ℹ️ No global config found at ${GLOBAL_CONFIG}`);
+    }
+    if (!removedAny) {
+        console.log("No configuration files were removed.");
+    }
+}
+
+function loadConfig() {
+    if (fs.existsSync(LOCAL_CONFIG)) {
+        console.log(`ℹ️ Using local config: ${LOCAL_CONFIG}`);
+        return JSON.parse(fs.readFileSync(LOCAL_CONFIG, "utf-8"));
+    } else if (fs.existsSync(GLOBAL_CONFIG)) {
+        console.log(`ℹ️ Using global config: ${GLOBAL_CONFIG}`);
+        return JSON.parse(fs.readFileSync(GLOBAL_CONFIG, "utf-8"));
+    } else {
+        return null;
+    }
+}
+
+function saveConfig(config, useGlobal = false) {
+    if (useGlobal) {
+        if (!fs.existsSync(GLOBAL_DIR)) {
+            fs.mkdirSync(GLOBAL_DIR, { recursive: true });
+        }
+        fs.writeFileSync(GLOBAL_CONFIG, JSON.stringify(config, null, 2));
+        console.log(`✅ Config saved to global path: ${GLOBAL_CONFIG}`);
+    } else {
+        fs.writeFileSync(LOCAL_CONFIG, JSON.stringify(config, null, 2));
+        console.log(`✅ Config saved to local path: ${LOCAL_CONFIG}`);
+    }
+}
+
+async function runSetup() {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    function question(prompt, required = false, defaultValue = null) {
+        return new Promise((resolve) => {
+            rl.question(prompt, (answer) => {
+                if (required && !answer.trim() && defaultValue === null) {
+                    resolve(question(prompt, required, defaultValue));
+                } else {
+                    resolve(answer.trim() || defaultValue);
+                }
+            });
+        });
+    }
+
+    let region = await question("Enter AWS Region (default: us-east-1): ", false, "us-east-1");
+    let bucket = await question("Enter S3 Bucket name: ", true);
+    let prefix = await question("Enter S3 Prefix (e.g. demo-assets/): ", true);
+    let profile = await question("Enter AWS Profile name: ", true);
+
+    rl.close();
+
+    // Validate credentials by calling STS GetCallerIdentity
+    let stsClient, GetCallerIdentityCommand;
+    try {
+        const stsModule = await import("@aws-sdk/client-sts");
+        stsClient = new stsModule.STSClient({ region, credentials: fromIni({ profile }) });
+        GetCallerIdentityCommand = stsModule.GetCallerIdentityCommand;
+    } catch (e) {
+        console.error("❌ Failed to load STS client:", e.message);
+        process.exit(1);
+    }
+
+    try {
+        const command = new GetCallerIdentityCommand({});
+        await stsClient.send(command);
+        console.log("✅ AWS credentials validated.");
+    } catch (e) {
+        console.error("❌ AWS credentials validation failed:", e.message);
+        process.exit(1);
+    }
+
+    const config = { region, bucket, prefix, profile };
+    // Save config locally if possible, otherwise globally
+    try {
+        saveConfig(config, false);
+    } catch (e) {
+        console.warn("⚠️ Could not save local config, saving globally.");
+        saveConfig(config, true);
+    }
+}
+
+function showConfig() {
+    let config = null;
+    if (fs.existsSync(LOCAL_CONFIG)) {
+        config = JSON.parse(fs.readFileSync(LOCAL_CONFIG, "utf-8"));
+        console.log(`Local config (${LOCAL_CONFIG}):`);
+    } else if (fs.existsSync(GLOBAL_CONFIG)) {
+        config = JSON.parse(fs.readFileSync(GLOBAL_CONFIG, "utf-8"));
+        console.log(`Global config (${GLOBAL_CONFIG}):`);
+    } else {
+        console.log("No configuration file found.");
+        return;
+    }
+    console.log(JSON.stringify(config, null, 2));
+}
 
 // --- CLI arguments ---
 const args = process.argv.slice(2);
@@ -126,18 +253,33 @@ function getArgValue(flag, fallback = null) {
     return args[index + 1] && !args[index + 1].startsWith("--") ? args[index + 1] : fallback;
 }
 
-const PROFILE = getArgValue("--profile", process.env.AWS_PROFILE || "admin");
-const EXPIRY_HOURS = Number(getArgValue("--hours", 12));
+const setupMode = args.includes("--setup");
+const showConfigMode = args.includes("--showConfig");
+const resetConfigMode = args.includes("--resetConfig");
 
-const UPLOAD_PATH = getArgValue("--upload");
-const UPLOAD_DIR = getArgValue("--uploadDir");
-const typeArgRaw = getArgValue("--type");
-const ALLOWED_TYPES = typeArgRaw
-    ? typeArgRaw.split(",").map(t => t.trim().toLowerCase())
-    : null;
+if (setupMode) {
+    await runSetup();
+    process.exit(0);
+}
 
-const listOnly = args.includes("--list");
-const showHelp = args.includes("--help") || args.includes("-h");
+if (showConfigMode) {
+    showConfig();
+    process.exit(0);
+}
+
+if (resetConfigMode) {
+    resetConfig();
+    process.exit(0);
+}
+
+// --- Load configuration ---
+const config = loadConfig() || { region: "us-east-1", bucket: "audioshake", prefix: "demo-assets/", profile: "admin", hours: 12 };
+
+const REGION = config.region || "us-east-1";
+const BUCKET = config.bucket || "audioshake";
+const PREFIX = config.prefix || "demo-assets/";
+const PROFILE = config.profile || process.env.AWS_PROFILE || "admin";
+const EXPIRY_HOURS = Number(getArgValue("--hours", config.hours || 12));
 
 // --- AWS S3 Client ---
 const s3 = new S3Client({
@@ -145,6 +287,8 @@ const s3 = new S3Client({
     signerRegion: REGION,
     credentials: fromIni({ profile: PROFILE }),
 });
+
+console.log(`ℹ️ Using AWS config: region=${REGION}, bucket=${BUCKET}, prefix=${PREFIX}, profile=${PROFILE}`);
 
 // --- Common MIME Type Map ---
 const mimeMap = {
@@ -252,6 +396,17 @@ async function listBucket() {
     }
 }
 
+// --- CLI arguments continued ---
+const UPLOAD_PATH = getArgValue("--upload");
+const UPLOAD_DIR = getArgValue("--uploadDir");
+const typeArgRaw = getArgValue("--type");
+const ALLOWED_TYPES = typeArgRaw
+    ? typeArgRaw.split(",").map(t => t.trim().toLowerCase())
+    : null;
+
+const listOnly = args.includes("--list");
+const showHelp = args.includes("--help") || args.includes("-h");
+
 // --- Main Logic ---
 async function buildDemoAssets() {
     console.log(`🔍 Listing objects in s3://${BUCKET}/${PREFIX} using profile "${PROFILE}"${ALLOWED_TYPES ? " (filter: " + ALLOWED_TYPES.join(", ") + ")" : ""}...`);
@@ -337,6 +492,9 @@ Options:
   --hours <n>                 Set the presigned URL expiry (default: 12h)
   --profile <aws-profile>     Use a specific AWS profile (default: admin)
   --help, -h                  Show this help message
+  --setup                     Run interactive setup for configuration
+  --showConfig                Display current configuration
+  --resetConfig               Remove both local and global configuration files
 
 Examples:
   create-demo-assets --upload ./song.mp3

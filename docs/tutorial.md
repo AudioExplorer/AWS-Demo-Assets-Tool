@@ -67,23 +67,17 @@ Ensure your IAM policy allows `s3:ListBucket` and `s3:GetObject` for your demoâ€
 
 ---
 
-## Step 2: Install the CLI
+## Step 2: Install the tool
 
-Clone the repo (available on GitHub):
+Install with our NPX package:
 ```bash
-git clone https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
-cd AWS-Demo-Assets-Tool
+npx create-demo-assets 
 ```
 
-Then install the dependencies globally:
+Then install the dependencies globally and creates a config file that stores your bucket information and which AWS profile to use.
 ```bash
-npm install -g @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers
-```
-
-And link the CLI so it can be used from anywhere:
-```bash
-sudo cp ./bin/create-demo-assets /usr/local/bin/create-demo-assets
-sudo chmod +x /usr/local/bin/create-demo-assets
+# Run setup again to change the config
+create-demo-assets --setup
 ```
 
 ---
@@ -174,19 +168,14 @@ demo-assets.json created with 8 assets
 }
 ```
 
----
-
-## Bonus Tip
-
-If you use NVM and global modules, the provided wrapper ensures this CLI works even in fresh shells â€” no path or version headaches.
 
 ---
 
 #### Grab the GitHub **Repository:** [AWS-Demo-Assets-Tool](https://github.com/AudioExplorer/AWS-Demo-Assets-Tool)  
 Includes:
 - `/scripts/create-demo-assets.mjs` (Node script)  
-- `/bin/create-demo-assets` (NVM-aware global wrapper)  
-- `tutorial.md` (full install guide)  
+- `/docs/tutorial.md` (full install guide)  
+- `README.MD`
 
 ---
 

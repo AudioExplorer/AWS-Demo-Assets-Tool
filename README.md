@@ -1,49 +1,16 @@
 # AWS Demo Assets Tool
 
-**TL;DR Quick Run:**
-
-```bash
-# Configure AWS profile (if needed)
-aws configure --profile admin
-
-# Install dependencies (choose ONE):
-# Local project:
-npm init -y
-npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers
-# OR Global:
-npm install -g @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers
-
-
-# Before running globally, update your bucket and prefix!
-# Edit the following constants in scripts/create-demo-assets.mjs:
-# const BUCKET = "<your-s3-bucket-name>";
-# const PREFIX = "demo-assets/";
-
-
-# Install CLI wrapper globally:
-sudo cp ./bin/create-demo-assets /usr/local/bin/create-demo-assets
-sudo chmod +x /usr/local/bin/create-demo-assets
-```
-
-
----
-
 A lightweight Node.js command-line tool that lists S3 media assets, generates presigned URLs, and outputs a `demo-assets.json` file for easy integration into your audio, video, or SDK demos.  
 Designed for developers who regularly work with secure Amazon S3 buckets to manage and refresh demo content.
 
-![Node.js](https://img.shields.io/badge/node-%3E%3D18.0-green)  
-![AWS SDK v3](https://img.shields.io/badge/AWS%20SDK-v3-blue)  
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![Node.js](https://img.shields.io/badge/node-%3E%3D18.0-green)  ![AWS SDK v3](https://img.shields.io/badge/AWS%20SDK-v3-blue)  ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
----
 
 ## Requirements
 
 - **Node.js ≥ 18**  
 - AWS credentials with access to your demo-assets bucket  
 - Either local or global installation of AWS SDK dependencies (not both)
-
----
 
 ## Features
 
@@ -56,7 +23,53 @@ Designed for developers who regularly work with secure Amazon S3 buckets to mana
 
 ---
 
-## Quick Start
+## TL;DR  Quick Start 
+
+The new `create-demo-assets` CLI can be run instantly with NPX — no manual dependency or wrapper installation required.
+
+```bash
+# First-time setup (interactive)
+npx create-demo-assets --setup
+
+# Once installed you can reference it without the npx
+
+# List your current demo assets
+create-demo-assets --list
+
+# Upload a local file
+create-demo-assets --upload ./file.mp3
+
+Configuration
+
+During setup, you’ll be prompted for:
+	•	AWS Region
+	•	S3 Bucket name
+	•	S3 Prefix (e.g., demo-assets/)
+	•	AWS Profile name
+
+The tool saves your configuration locally (per project) or globally (for all projects).
+You can manage it anytime with:
+
+# Show current configuration
+create-demo-assets --showConfig
+
+# Reset and reconfigure
+create-demo-assets --resetConfig
+
+If your AWS credentials are missing or invalid, you can configure them manually:
+
+aws configure --profile <your-profile>
+
+Then re-run setup:
+
+create-demo-assets --setup
+
+💡 The tool validates your AWS credentials automatically during setup, ensuring you’re ready to upload and list assets immediately.
+
+```
+
+
+## AWS Credential Setup
 
 ### 1. Configure AWS Credentials
 
@@ -79,43 +92,10 @@ aws configure --profile admin
 # Region: us-east-1
 # Output: json
 ```
+### 2. Run the Tool
+At it's simplest, this will generate a JSON file containing all your aws assets in a bucket and prefix location.
 
-### 2. Install Project Dependencies
-
-> **Note:** Choose *either* Option A *or* Option B — do **not** install both.
-
-#### Option A: Local Project Installation
-
-```bash
-# Init and install SDKs
-npm init -y
-npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers
-```
-
-#### Option B: Global Installation
-Alternatively, intall the dependencies locally enable cmd tool access anywhere.
-```bash
-# Init and install SDK globally
-npm install -g @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/credential-providers
-```
-
-### 3. Install the CLI Wrapper Globally
-If you chose option B, then this cmd will copy the files to your /**usr/local/bin** 
-
-```bash
-sudo cp ./bin/create-demo-assets /usr/local/bin/create-demo-assets
-sudo chmod +x /usr/local/bin/create-demo-assets
-```
-
-### 4. Run the Tool
-
-#### Within this Project
-
-```bash
-node scripts/create-demo-assets.mjs
-```
-
-#### Using the Global CLI Wrapper
+#### Generate demo-assets.json
 
 ```bash
 create-demo-assets
@@ -143,7 +123,7 @@ Example output:
 
 ---
 
-## Usage Options (Global)
+## Usage Options
 
 ```bash
 # From the project root
@@ -228,7 +208,6 @@ Example output:
 ✅ Total files: 17
 ```
 
-
 ## Why This Exists
 
 When working with AudioShake APIs or other SDKs, demo assets often live in protected S3 buckets.  
@@ -249,8 +228,8 @@ This tool eliminates the need to manually generate presigned URLs every time the
 
 ---
 
-## Troubleshooting
 
+## Troubleshooting
 - **SignatureDoesNotMatch** — Ensure your bucket region is correct (set to `us-east-1` if `LocationConstraint` is `null`).  
 - **Cannot find package '@aws-sdk/client-s3'** — Confirm packages are globally installed for your current NVM Node version.  
 - **Permission denied** — Use `sudo chmod +x /usr/local/bin/create-demo-assets` to make the wrapper executable.
