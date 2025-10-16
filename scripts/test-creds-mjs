@@ -1,5 +1,13 @@
+#!/usr/bin/env node
+
+/***
+ * 
+ * Check your local AWS cedentials 
+ * 
+ */
 
 import { fromIni } from "@aws-sdk/credential-providers";
 
+// Change to your AWS Profile
 const creds = await fromIni({ profile: "admin" })();
 console.log(creds);

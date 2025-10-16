@@ -159,12 +159,6 @@ Supported File Types:
 Docs & Updates:
   https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
 ```
-
-## Why This Exists
-
-When working with AudioShake APIs or other SDKs, demo assets often live in protected S3 buckets.  
-This tool eliminates the need to manually generate presigned URLs every time they expire, enabling safe, repeatable integration of media in test apps or demo environments.
-
 ---
 
 ## Repository Structure
@@ -178,8 +172,13 @@ This tool eliminates the need to manually generate presigned URLs every time the
  └── tutorial.md              → detailed setup and usage guide
 ```
 
----
 
+## Why This Exists
+
+When working with AudioShake APIs or other SDKs, demo assets often live in protected S3 buckets.  
+This tool eliminates the need to manually generate presigned URLs every time they expire, enabling safe, repeatable integration of media in test apps or demo environments.
+
+---
 
 ## Troubleshooting
 - **SignatureDoesNotMatch** — Ensure your bucket region is correct (set to `us-east-1` if `LocationConstraint` is `null`).  
