@@ -518,7 +518,7 @@ Supported File Types:
 💡 To extend support, edit the mimeMap inside scripts/create-demo-assets.mjs.
 
 Docs & Updates:
-  https://github.com/audioshake-dev/demo-assets-tool
+  https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
 `);
     process.exit(0);
 }

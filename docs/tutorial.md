@@ -1,23 +1,28 @@
-## Keep Your AWS S3 Demo Assets Live: Automating Presigned URLs with Node.js
-
 ### TL;DR
 You work with audio (or any media) all the time and have **demo assets** stored securely on Amazon S3.  
 You want to load these into your apps or SDK demos — but your **presigned URLs keep expiring**.  
 
-*Update:* The CLI now also supports uploading files or directories to your S3 demo‑assets bucket and listing bucket contents — all with one command.
+This CLI tool also supports uploading files or directories to your S3 demo‑assets bucket and listing bucket contents — all with one command.
 
-This little Node.js CLI lets you:
+This little Node.js CLI tool lets you:
+- quickly upload a media asset object to your AWS Bucket
 - generate presigned URLs for your S3 bucket (`demo-assets/`)
 - save them in a JSON file for easy import into any project  
 - refresh them anytime with a single command
 
-Let’s walk through how to build it.
+Let’s walk through how to install and use it.
+```bash
+npx create-demo-assets 
+```
+### That's it! 
+
+Open a terminal and run that cmd. Well almost, this tool is for managing AWS objects, so there is the expectation you've have the AWS CLI tool already installed and use their tool to manage your credentials. Scroll down for a deeper explanation.
 
 ---
 
-## Use Case
+## Basic Use Case
 
-You might have something like:
+On AWS 3, you might have something like:
 ```
 s3://audioshake/demo-assets/
 ├── Chupe-Jaae-English.mp4
@@ -25,7 +30,7 @@ s3://audioshake/demo-assets/
 ├── Guitar-Solo.mp3
 ```
 
-These are your demo media files — used for testing APIs, web players, or internal demos.
+Now your local or web app can fetch demo assets reliably — and when URLs expire, just rerun `create-demo-assets`. These are your demo media files — used for testing APIs, web players, or internal demos.
 
 You could manually create a presigned URL each time, but that’s tedious.  
 Instead, you’ll use this lightweight CLI to generate a simple `demo-assets.json`:
@@ -43,46 +48,9 @@ Instead, you’ll use this lightweight CLI to generate a simple `demo-assets.jso
 }
 ```
 
-Now your local or web app can fetch demo assets reliably — and when URLs expire, just rerun `create-demo-assets`.
-
 ---
 
-## Step 1: Configure AWS
-
-Make sure you have the AWS CLI set up with a profile that can read from your bucket:
-
-```bash
-aws configure --profile admin
-# Region: us-east-1
-# Output: json
-```
-
-You can verify:
-```bash
-aws sts get-caller-identity --profile admin
-aws s3 ls s3://audioshake/demo-assets/ --profile admin
-```
-
-Ensure your IAM policy allows `s3:ListBucket` and `s3:GetObject` for your demo‑assets prefix.
-
----
-
-## Step 2: Install the tool
-
-Install with our NPX package:
-```bash
-npx create-demo-assets 
-```
-
-Then install the dependencies globally and creates a config file that stores your bucket information and which AWS profile to use.
-```bash
-# Run setup again to change the config
-create-demo-assets --setup
-```
-
----
-
-## Step 3: Run It
+### Using The tool:
 
 From any directory:
 ```bash
@@ -101,7 +69,7 @@ It will:
 demo-assets.json created with 8 assets
 ```
 
-## Step 4: Upload or List Assets
+### Upload or List Assets
 
 You can now upload new demo files or check what’s in your bucket without generating JSON.
 
@@ -124,7 +92,35 @@ If you pass `--type`, only matching file extensions are included. Supported form
 
 ---
 
-## How It Works (Under the Hood)
+## How to configure the tool for AWS
+
+Make sure you have the AWS CLI installed set up with a config profile that can read from your bucket:
+
+```bash
+aws configure --profile admin
+# Region: us-east-1
+# Output: json
+```
+
+You can verify:
+```bash
+aws sts get-caller-identity --profile admin
+# This will print the S3 arn:
+aws s3 ls s3://<Your-AWS-Bucket>/demo-assets/ --profile admin
+```
+
+Ensure your IAM policy allows `s3:ListBucket` and `s3:GetObject` for your demo‑assets prefix.
+
+
+### Need to update your credentials?
+This cmd will install the dependencies globally and creates a config file that stores your bucket information and which AWS profile to use.
+```bash
+# Run setup again to change the config
+create-demo-assets --setup
+```
+---
+
+### How It Works (Under the Hood)
 
 The script uses the AWS SDK v3:
 ```js
@@ -141,7 +137,7 @@ The same script now handles uploads and listing via the same S3 client — no ex
 
 ---
 
-## Refreshing URLs
+### Refreshing URLs
 
 Each URL has a 12‑hour expiry by default.  
 When your links expire, just rerun:
@@ -152,7 +148,7 @@ and it’ll overwrite the old JSON with fresh URLs.
 
 ---
 
-## Example Output
+### Example Output
 
 ```
 🔍 Listing objects in s3://audioshake/demo-assets/ ...
@@ -170,16 +166,14 @@ demo-assets.json created with 8 assets
 
 
 ---
+### Open Sourced, Feel free to extend the tool!
 
-#### Grab the GitHub **Repository:** [AWS-Demo-Assets-Tool](https://github.com/AudioExplorer/AWS-Demo-Assets-Tool)  
-Includes:
-- `/scripts/create-demo-assets.mjs` (Node script)  
-- `/docs/tutorial.md` (full install guide)  
-- `README.MD`
+You can fork the GitHub **Repository:** [AWS-Demo-Assets-Tool](https://github.com/AudioExplorer/AWS-Demo-Assets-Tool) to add new features to the tool.  Finally npx distribution is here on [npmjs.com](https://www.npmjs.com/package/audioshake-demo-assets).  if you find the tool useful then share and drop us some ⭐️⭐️⭐️⭐️⭐️'s 
+Drop a comment to let me know your use case, and feel free to suggest new features.
 
 ---
 
-## Why It’s Useful
+### Why It’s Useful
 This simple tool bridges your secure S3 assets with live demos or dev environments — without exposing buckets or manually generating presigned URLs every time.  
 
 Recent updates make it easier to keep demo assets synchronized: you can upload, list, and regenerate presigned URLs from one CLI.

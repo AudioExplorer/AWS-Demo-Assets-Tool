@@ -121,91 +121,43 @@ Example output:
 }
 ```
 
----
 
 ## Usage Options
+```Bash
+AudioShake Demo Asset Builder (v2)
+----------------------------------
+Usage:
+  npx create-demo-assets [options]
+  create-demo-assets [options]
 
-```bash
-# From the project root
+Options:
+  --upload <file>             Upload a single file to s3://${BUCKET}/${PREFIX}
+  --uploadDir <directory>     Upload all supported files from a directory
+  --type <ext[,ext]>          Optional. Filter uploads or JSON output by file type (e.g., mp3,mp4,wav)
+  --list                      List existing assets in the bucket (no JSON generation)
+  --hours <n>                 Set the presigned URL expiry (default: 12h)
+  --profile <aws-profile>     Use a specific AWS profile (default: admin)
+  --help, -h                  Show this help message
+  --setup                     Run interactive setup for configuration
+  --showConfig                Display current configuration
+  --resetConfig               Remove both local and global configuration files
 
-# Default (uses AWS profile 'admin', 12h expiry)
-create-demo-assets
+Examples:
+  create-demo-assets --upload ./song.mp3
+  create-demo-assets --uploadDir ./assets --type=mp3,mp4
+  create-demo-assets --type=mp3,mp4
+  create-demo-assets --list
 
-# Display Help
-create-demo-assets --help
+Supported File Types:
+  Audio: mp3, wav, m4a, aac
+  Video: mp4, mov
+  Text: txt, md, srt, json, csv, xml
+  Images: jpg, jpeg, png, gif, webp
 
-# Using custom AWS profile
-create-demo-assets --profile=dev
+💡 To extend support, edit the mimeMap inside scripts/create-demo-assets.mjs.
 
-# Longer expiry (24h)
-create-demo-assets --hours=24
-
-# Combined options
-create-demo-assets --hours=6 --profile=<your-aws-profile>
-```
-
-### Filter JSON Output by File Type
-
-You can also limit the generated `demo-assets.json` to specific file types.
-
-```bash
-create-demo-assets --type=mp3,mp4
-```
-
-This will include only `.mp3` and `.mp4` assets in the generated JSON file.
-
-If no files of those types exist, you’ll see:
-```
-Currently you do not have any mp3 or mp4 assets in s3://your-bucket/demo-assets/
-💡 Use --upload or --uploadDir to add these files to your AWS demo-assets bucket.
-```
-
----
-
-## Upload & List Features
-
-The tool can upload local files or entire directories directly to your AWS demo-assets bucket and list existing contents without regenerating `demo-assets.json`.
-
-### Upload a Single File
-```bash
-create-demo-assets --upload ./my-audio.mp3
-```
-
-### Upload All Files in a Directory
-```bash
-create-demo-assets --uploadDir ./assets
-```
-
-### Filter by File Type
-Optionally limit uploads to specific extensions:
-```bash
-create-demo-assets --uploadDir ./assets --type=mp3,mp4,wav
-```
-If `--type` is omitted, all recognized file types will be uploaded.
-
-### Supported File Types
-
-| Category | Extensions | MIME Type |
-|-----------|-------------|-----------|
-| **Audio** | mp3, wav, m4a, aac | audio/mpeg, audio/wav, audio/m4a, audio/aac |
-| **Video** | mp4, mov | video/mp4, video/quicktime |
-| **Text / Data** | txt, md, json, csv, xml, srt | text/plain, text/markdown, application/json, text/csv, application/xml, application/x-subrip |
-| **Images** | jpg, jpeg, png, gif, webp | image/jpeg, image/png, image/gif, image/webp |
-
-> 💡 **To extend support**, edit the `mimeMap` inside `scripts/create-demo-assets.mjs` and add your preferred extensions and MIME types.
-
-### List Existing Files
-You can view all files under your configured prefix:
-```bash
-create-demo-assets --list
-```
-
-Example output:
-```
-🔍 Listing s3://audioshake/demo-assets/ (list-only mode)...
-• demo-assets/song.mp3 (3.4 MB)
-• demo-assets/video.mp4 (12.1 MB)
-✅ Total files: 17
+Docs & Updates:
+  https://github.com/AudioExplorer/AWS-Demo-Assets-Tool
 ```
 
 ## Why This Exists
@@ -234,7 +186,6 @@ This tool eliminates the need to manually generate presigned URLs every time the
 - **Cannot find package '@aws-sdk/client-s3'** — Confirm packages are globally installed for your current NVM Node version.  
 - **Permission denied** — Use `sudo chmod +x /usr/local/bin/create-demo-assets` to make the wrapper executable.
 
----
 
 ## Maintained By
 
