@@ -406,6 +406,7 @@ async function listBucket() {
 // --- CLI arguments continued ---
 const UPLOAD_PATH = getArgValue("--upload");
 const UPLOAD_DIR = getArgValue("--uploadDir");
+let CLOUDFRONT_PATH = getArgValue("--cloudfront");
 const typeArgRaw = getArgValue("--type");
 const ALLOWED_TYPES = typeArgRaw
     ? typeArgRaw.split(",").map(t => t.trim().toLowerCase())
@@ -413,7 +414,12 @@ const ALLOWED_TYPES = typeArgRaw
 
 const listOnly = args.includes("--list");
 const showHelp = args.includes("--help") || args.includes("-h");
-const publicUrls = args.includes("--public");
+let publicUrls = args.includes("--public");
+// 
+const useCloudfront = args.includes("--cloudfront");
+//CLOUDFRONT_PATH
+
+
 
 // --- Main Logic ---
 async function buildDemoAssets() {
@@ -455,11 +461,18 @@ async function buildDemoAssets() {
                 const ext = obj.Key.split(".").pop().toLowerCase();
 
                 // Strip query string if --public flag is set
+                if (useCloudfront) { publicUrls = true } // always true for cf urls
                 const finalUrl = publicUrls ? signedUrl.split('?')[0] : signedUrl;
                 const finalExpiryDate = publicUrls ? null : expiryDate.toISOString()
+                // create 
+
+                //normalize path
+                CLOUDFRONT_PATH = (CLOUDFRONT_PATH.endsWith("/")) ? CLOUDFRONT_PATH : CLOUDFRONT_PATH + "/";
+                const cfURL = CLOUDFRONT_PATH + PREFIX + finalUrl.split(PREFIX)[1]
+                const cloudfrontURL = useCloudfront ? cfURL : finalUrl
 
                 return {
-                    src: finalUrl,
+                    src: cloudfrontURL,
                     title: obj.Key.replace(PREFIX, ""),
                     format: mimeMap[ext] || "application/octet-stream",
                     expiry: finalExpiryDate,
@@ -499,7 +512,9 @@ Usage:
 Options:
   --upload <file>             Upload a single file to s3://${BUCKET}/${PREFIX}
   --uploadDir <directory>     Upload all supported files from a directory
-  --public                    Generate public URLs without pre-signed query strings (requires public bucket)
+  --public                    Generate public URLs without pre-signed query 
+  strings (requires public bucket)
+  --cloudfront                Generate public URLs using the cloudfront distribution base url
   --type <ext[,ext]>          Optional. Filter uploads or JSON output by file type (e.g., mp3,mp4,wav)
   --list                      List existing assets in the bucket (no JSON generation)
   --hours <n>                 Set the presigned URL expiry (default: 12h)
@@ -514,6 +529,7 @@ Examples:
   create-demo-assets --uploadDir ./assets --type=mp3,mp4
   create-demo-assets --type=mp3,mp4
   create-demo-assets --list
+  create-demo-assets --cloudfront https://demos.spatial-explorer.com
 
 Supported File Types:
   Audio: mp3, wav, m4a, aac
