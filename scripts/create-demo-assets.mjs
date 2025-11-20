@@ -413,6 +413,7 @@ const ALLOWED_TYPES = typeArgRaw
 
 const listOnly = args.includes("--list");
 const showHelp = args.includes("--help") || args.includes("-h");
+const publicUrls = args.includes("--public");
 
 // --- Main Logic ---
 async function buildDemoAssets() {
@@ -453,11 +454,15 @@ async function buildDemoAssets() {
                 const signedUrl = await getSignedUrl(s3, getCmd, { expiresIn: EXPIRY_HOURS * 3600 });
                 const ext = obj.Key.split(".").pop().toLowerCase();
 
+                // Strip query string if --public flag is set
+                const finalUrl = publicUrls ? signedUrl.split('?')[0] : signedUrl;
+                const finalExpiryDate = publicUrls ? null : expiryDate.toISOString()
+
                 return {
-                    src: signedUrl,
+                    src: finalUrl,
                     title: obj.Key.replace(PREFIX, ""),
                     format: mimeMap[ext] || "application/octet-stream",
-                    expiry: expiryDate.toISOString(),
+                    expiry: finalExpiryDate,
                 };
             } catch (err) {
                 console.error(`❌ Failed to sign ${obj.Key}:`, err.message);
@@ -494,6 +499,7 @@ Usage:
 Options:
   --upload <file>             Upload a single file to s3://${BUCKET}/${PREFIX}
   --uploadDir <directory>     Upload all supported files from a directory
+  --public                    Generate public URLs without pre-signed query strings (requires public bucket)
   --type <ext[,ext]>          Optional. Filter uploads or JSON output by file type (e.g., mp3,mp4,wav)
   --list                      List existing assets in the bucket (no JSON generation)
   --hours <n>                 Set the presigned URL expiry (default: 12h)

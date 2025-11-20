@@ -14,6 +14,7 @@ github.md
 scripts/demo-assets.json
 tmp.txt
 demo-assets.json
+demo-assets-config.json
 scripts/publish.md
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
