@@ -1,6 +1,6 @@
 {
   "name": "create-demo-assets",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "author": "Dan Zeitman <dan@audioshake.ai>",
   "description": "Generate and refresh AWS S3 presigned URLs for AudioShake demo assets. A lightweight Node.js command-line tool that lists S3 media assets, generates presigned URLs, and outputs a `demo-assets.json` file for easy integration into your audio, video, or SDK demos.   Designed for developers who regularly work with secure Amazon S3 buckets to manage and refresh demo content.",
   "type": "module",
