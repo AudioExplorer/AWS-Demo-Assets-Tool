@@ -133,6 +133,8 @@ Usage:
 Options:
   --upload <file>             Upload a single file to s3://${BUCKET}/${PREFIX}
   --uploadDir <directory>     Upload all supported files from a directory
+    --public                  Generate public URLs without pre-signed query strings (requires public bucket)
+  --cloudfront                Generate public URLs using the cloudfront distribution base url
   --type <ext[,ext]>          Optional. Filter uploads or JSON output by file type (e.g., mp3,mp4,wav)
   --list                      List existing assets in the bucket (no JSON generation)
   --hours <n>                 Set the presigned URL expiry (default: 12h)
@@ -147,6 +149,7 @@ Examples:
   create-demo-assets --uploadDir ./assets --type=mp3,mp4
   create-demo-assets --type=mp3,mp4
   create-demo-assets --list
+  create-demo-assets --cloudfront https://demos.spatial-explorer.com
 
 Supported File Types:
   Audio: mp3, wav, m4a, aac
