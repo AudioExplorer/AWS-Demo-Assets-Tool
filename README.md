@@ -175,7 +175,6 @@ Docs & Updates:
  └── tutorial.md              → detailed setup and usage guide
 ```
 
-
 ## Why This Exists
 
 When working with AudioShake APIs or other SDKs, demo assets often live in protected S3 buckets.  
